@@ -33,7 +33,7 @@ sudo qubes-dom0-update ansible-python3
 
 
 
-Update your ``/etc/ansible.cfg`` to have the following two lines.
+Update your ``/etc/ansible/ansible.cfg`` to have the following two lines.
 
 ```
 library = /usr/share/ansible_module/
