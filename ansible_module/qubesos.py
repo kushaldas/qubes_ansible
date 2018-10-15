@@ -139,6 +139,7 @@ PREFS = {'autostart': bool,
          'debug': bool,
          'include_in_backups': bool,
          'kernel': str,
+         'label': str,
          'maxmem': int,
          'memory': int,
          'provides_network': bool,
@@ -179,9 +180,12 @@ class QubesVirt(object):
     def info(self):
         info = dict()
         for vm in self.app.domains:
-            info[vm] = dict(
+            if vm.name == "dom0":
+                continue
+            info[vm.name] = dict(
                 state=self.__get_state(vm),
-                networked=vm.is_networked()
+                provides_network=vm.provides_network,
+                label=vm.label.name,
             )
 
         return info
@@ -239,6 +243,7 @@ class QubesVirt(object):
         "Sets the given preferences to the VM"
         changed = False
         vm = None
+        values_changed = []
         try:
             vm = self.get_vm(vmname)
         except KeyError:
@@ -248,49 +253,66 @@ class QubesVirt(object):
         if "autostart" in prefs and vm.autostart != prefs["autostart"]:
                 vm.autostart = prefs["autostart"]
                 changed = True
+                values_changed.append("autostart")
         if "debug" in prefs and vm.debug != prefs["debug"]:
             vm.debug = prefs["debug"]
             changed = True
+            values_changed.append("debug")
         if "include_in_backups" in prefs and vm.include_in_backups != prefs["include_in_backups"]:
             vm.include_in_backups = prefs["include_in_backups"]
             changed = True
+            values_changed.append("include_in_backups")
         if "kernel" in prefs and vm.kernel != prefs["kernel"]:
             vm.kernel = prefs["kernel"]
             changed = True
+            values_changed.append("kernel")
+        if "label" in prefs and vm.label.name != prefs["label"]:
+            vm.label = prefs["label"]
+            changed = True
+            values_changed.append("label")
         if "maxmem" in prefs and vm.maxmem != prefs["maxmem"]:
             vm.maxmem = prefs["maxmem"]
             changed = True
+            values_changed.append("maxmem")
         if "memory" in prefs and vm.memory != prefs["memory"]:
             vm.memory = prefs["memory"]
             changed = True
+            values_changed.append("memory")
         if "provides_network" in prefs and vm.provides_network != prefs["provides_network"]:
             vm.provides_network = prefs["provides_network"]
             changed = True
+            values_changed.append("provides_network")
         if "netvm" in prefs:
             netvm = self.app.domains[prefs["netvm"]]
             if vm.netvm != netvm:
                 vm.netvm = netvm
                 changed = True
+                values_changed.append("netvm")
         if "default_dispvm" in prefs:
             default_dispvm = self.app.domains[prefs["default_dispvm"]]
             if vm.default_dispvm != default_dispvm:
                 vm.default_dispvm = default_dispvm
                 changed = True
+                values_changed.append("default_dispvm")
         if "template" in prefs:
             template = self.app.domains[prefs["template"]]
             if vm.template != template:
                 vm.template = template
                 changed = True
+                values_changed.append("template")
         if "template_for_dispvms" in prefs and vm.template_for_dispvms != prefs["template_for_dispvms"]:
             vm.template_for_dispvms = prefs["template_for_dispvms"]
             changed = True
+            values_changed.append("template_for_dispvms")
         if "vcpus" in prefs and vm.vcpus != prefs["vcpus"]:
             vm.vcpus = prefs["vcpus"]
             changed = True
+            values_changed.append("vcpus")
         if "virt_mode" in prefs and vm.virt_mode != prefs["virt_mode"]:
             vm.virt_mode = prefs["virt_mode"]
             changed = True
-        return changed
+            values_changed.append("virt_mode")
+        return changed, values_changed
 
 
     def undefine(self, vmname):
@@ -357,8 +379,8 @@ def core(module):
                 if not vm.template_for_dispvms:
                     return VIRT_FAILED, {"Missing dispvm capability": val}
         if state == "present" and guest and vmtype:
-            changed = v.preferences(guest, preferences, vmtype)
-        return VIRT_SUCCESS, {"Preferences updated": guest, "changed": changed}
+            changed, changed_values = v.preferences(guest, preferences, vmtype)
+        return VIRT_SUCCESS, {"Preferences updated": changed_values, "changed": changed}
 
     if state and command == 'list_vms':
         res = v.list_vms(state=state)
