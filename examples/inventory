@@ -1,0 +1,12 @@
+[local]
+localhost
+
+[local:vars]
+ansible_connection=local
+
+[appvms]
+supansible
+xchat
+
+[appvms:vars]
+ansible_connection=qubes

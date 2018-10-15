@@ -49,6 +49,10 @@ Just keep in mind that the creation/detroying of the vms will require a
 To work on the remote VM, use **qubes** connection and use standard playbooks.
 
 
+## Examples
+
+Check the examples directory in this repo.
+
 ## Under development
 
 This project is still very young, and the **qubesos** module will go under

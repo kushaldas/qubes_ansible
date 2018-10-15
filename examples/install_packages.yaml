@@ -1,0 +1,13 @@
+---
+- hosts: xchat
+  tasks:
+  - name: Ensure sl is at the latest version
+    dnf: name=sl state=latest
+  - name: example copying file with owner and permissions
+    copy:
+      src: foo.conf
+      dest: /etc/foo.conf
+  - name: Fetch os-relase
+    fetch:
+      src: /etc/os-release
+      dest: /tmp/fetched
