@@ -235,10 +235,16 @@ class QubesVirt(object):
         vm.force_shutdown()
         return 0
 
-    def preferences(self, vmname, prefs):
+    def preferences(self, vmname, prefs, vmtype):
         "Sets the given preferences to the VM"
         changed = False
-        vm = self.get_vm(vmname)
+        vm = None
+        try:
+            vm = self.get_vm(vmname)
+        except KeyError:
+            # Means first we have to create the vm
+            self.create(vmname, vmtype)
+            vm = self.get_vm(vmname)
         if "autostart" in prefs and vm.autostart != prefs["autostart"]:
                 vm.autostart = prefs["autostart"]
                 changed = True
@@ -315,8 +321,8 @@ def core(module):
     state = module.params.get('state', None)
     guest = module.params.get('name', None)
     command = module.params.get('command', None)
-    vmtype = module.params.get('vmtype', None)
-    label = module.params.get('label', None)
+    vmtype = module.params.get('vmtype', 'AppVM')
+    label = module.params.get('label', 'red')
     template = module.params.get('template', None)
     netvm = module.params.get('netvm', "default")
     preferences = module.params.get('preferences', None)
@@ -350,8 +356,8 @@ def core(module):
                 # Also the vm should provide network
                 if not vm.template_for_dispvms:
                     return VIRT_FAILED, {"Missing dispvm capability": val}
-        if state == "present" and guest:
-            changed = v.preferences(guest, preferences)
+        if state == "present" and guest and vmtype:
+            changed = v.preferences(guest, preferences, vmtype)
         return VIRT_SUCCESS, {"Preferences updated": guest, "changed": changed}
 
     if state and command == 'list_vms':
