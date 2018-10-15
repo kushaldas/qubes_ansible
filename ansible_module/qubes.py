@@ -71,7 +71,7 @@ class Connection(ConnectionBase):
         # Default username in Qubes
         self.user = "user"
 
-    def _qubes(self,  cmd=None, in_data=None):
+    def _qubes(self, cmd=None, in_data=None):
         """
         run qvm-run-vm executable
 
@@ -166,9 +166,9 @@ class Connection(ConnectionBase):
             cmd = ["mv", os.path.join("/home/user/QubesIncoming/", self._remote_vmname, filename, out_path)]
         else:
             # We are running in dom0
-            cmd_args_list = ["qvm-run", "--pass-io", self._remote_vmname, "'cat {}'".format(in_path)]
+            cmd_args_list = ["qvm-run", "--pass-io", self._remote_vmname, "'cat {0}'".format(in_path)]
             p = subprocess.Popen(cmd_args_list, shell=False, stdin=subprocess.PIPE,
-                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
             stdout, stderr = p.communicate()
             tmp_path = os.path.join("/var/tmp/", filename)
@@ -179,7 +179,6 @@ class Connection(ConnectionBase):
             cmd = ["mv", tmp_path, out_path]
 
         subprocess.check_call(cmd)
-
 
     def close(self):
         """ Closing the connection """
