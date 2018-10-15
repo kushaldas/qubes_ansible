@@ -85,7 +85,7 @@ class Connection(ConnectionBase):
         else:
             # For dom0
             local_cmd.extend(["qvm-run", "--pass-io", "--service"])
-        
+
         local_cmd.append(self._remote_vmname)
 
         if cmd:
@@ -124,8 +124,6 @@ class Connection(ConnectionBase):
         super(Connection, self).exec_command(cmd, in_data=in_data, sudoable=sudoable)
 
         display.vvvv("CMD IS: %s" % cmd)
-        
-        
 
         rc, stdout, stderr = self._qubes(cmd)
 
@@ -144,7 +142,7 @@ class Connection(ConnectionBase):
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         stdout, stderr = p.communicate()
-    
+
         # Now let us move the file to the right location
         filename = os.path.basename(in_path)
         cmd = "mv {0} {1}".format(os.path.join("/home/user/QubesIncoming", self._hostname, filename), out_path)
@@ -164,7 +162,6 @@ class Connection(ConnectionBase):
             cmd = "qvm-copy-to-vm {0} {1}".format(self._hostname, in_path)
             self._qubes(cmd)
 
-            
             # Let us to move the file to the right path
             cmd = ["mv", os.path.join("/home/user/QubesIncoming/", self._remote_vmname, filename, out_path)]
         else:
@@ -178,14 +175,13 @@ class Connection(ConnectionBase):
             with open(tmp_path, "wb") as fobj:
                 fobj.write(stdout)
 
-            # Now create the mv commmand to move to the right place
+            # Now create the mv command to move to the right place
             cmd = ["mv", tmp_path, out_path]
-        
+
         subprocess.check_call(cmd)
 
 
     def close(self):
         """ Closing the connection """
         super(Connection, self).close()
-        display.vvvvv("RC %s STDOUT %r STDERR %r" % (rc, stdout, stderr))
         self._connected = False
