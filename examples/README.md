@@ -47,3 +47,28 @@ To install packages in the *xchat* vm
 ```
 ansible-playbook-3 -i inventory -b install_packages.yaml
 ```
+
+To make sure that one vm (in this example, xchat2) is in running state with particular
+details.
+
+```
+ansible-playbook-3 -i inventory presentstate.yaml
+```
+
+
+## Preference values currently available
+
+- autostart
+- debug
+- include_in_backups
+- kernel
+- label
+- maxmem
+- memory
+- provides_network
+- template
+- template_for_dispvms
+- vcpus
+- virt_mode
+- default_dispvm
+- netvm
