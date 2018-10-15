@@ -102,10 +102,12 @@ status:
     returned: success
 '''
 
+import time
 import traceback
 
 try:
     import qubesadmin
+    from qubesadmin.exc import QubesVMNotStartedError
 except ImportError:
     HAS_QUBES = False
 else:
@@ -235,10 +237,20 @@ class QubesVirt(object):
         vm.force_shutdown()
         return 0
 
-    # def undefine(self, vmid):
-    #     """ Stop a domain, and then wipe it from the face of the earth.  (delete disk/config file) """
+    def undefine(self, vmname):
+        """ Stop a domain, and then wipe it from the face of the earth.  (delete disk/config file) """
+        try:
+            self.destroy(vmname)
+        except QubesVMNotStartedError:
+            pass
+            # Because it is not running
 
-    #     return self.conn.undefine(vmid)
+        while True:
+            if self.__get_state(vmname) == "halted":
+                break
+            time.sleep(1)
+        del self.app.domains[vmname]
+        return 0
 
     def status(self, vmname):
         """
@@ -328,6 +340,10 @@ def core(module):
             if v.status(guest) is 'running':
                 res['changed'] = True
                 res['msg'] = v.pause(guest)
+        elif state == 'undefine':
+            if v.status(guest) is not 'shutdown':
+                res['changed'] = True
+                res['msg'] = v.undefine(guest)
         else:
             module.fail_json(msg="unexpected state")
 
@@ -341,7 +357,7 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             name=dict(type='str', aliases=['guest']),
-            state=dict(type='str', choices=['destroyed', 'pause', 'running', 'shutdown']),
+            state=dict(type='str', choices=['destroyed', 'pause', 'running', 'shutdown', 'undefine']),
             command=dict(type='str', choices=ALL_COMMANDS),
             label=dict(type='str', default='red'),
             vmtype=dict(type='str', default='AppVM'),
