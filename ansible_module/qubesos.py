@@ -135,9 +135,21 @@ VIRT_STATE_NAME_MAP = {
     6: 'crashed',
 }
 
+PREFS = {'autostart': bool,
+         'debug': bool,
+         'include_in_backups': bool,
+         'kernel': str,
+         'maxmem': int,
+         'memory': int,
+         'provides_network': bool,
+         'template': str,
+         'template_for_dispvms': bool,
+         'vcpus': int,
+         'virt_mode': str,
+         'default_dispvm': str,
+         'netvm': str
+        }
 
-class VMNotFound(Exception):
-    pass
 
 
 class QubesVirt(object):
@@ -167,27 +179,12 @@ class QubesVirt(object):
     def info(self):
         info = dict()
         for vm in self.app.domains:
-            # libvirt returns maxMem, memory, and cpuTime as long()'s, which
-            # xmlrpclib tries to convert to regular int's during serialization.
-            # This throws exceptions, so convert them to strings here and
-            # assume the other end of the xmlrpc connection can figure things
-            # out or doesn't care.
             info[vm] = dict(
                 state=self.__get_state(vm),
                 networked=vm.is_networked()
             )
 
         return info
-
-
-    # def autostart(self, vmid, as_flag):
-    #     self.conn = self.__get_conn()
-    #     # Change autostart flag only if needed
-    #     if self.conn.get_autostart(vmid) != as_flag:
-    #         self.conn.set_autostart(vmid, as_flag)
-    #         return True
-
-    #     return False
 
 
     def shutdown(self, vmname):
@@ -233,9 +230,62 @@ class QubesVirt(object):
 
     def destroy(self, vmname):
         """ Pull the virtual power from the virtual domain, giving it virtually no time to virtually shut down.  """
+
         vm = self.get_vm(vmname)
         vm.force_shutdown()
         return 0
+
+    def preferences(self, vmname, prefs):
+        "Sets the given preferences to the VM"
+        changed = False
+        vm = self.get_vm(vmname)
+        if "autostart" in prefs and vm.autostart != prefs["autostart"]:
+                vm.autostart = prefs["autostart"]
+                changed = True
+        if "debug" in prefs and vm.debug != prefs["debug"]:
+            vm.debug = prefs["debug"]
+            changed = True
+        if "include_in_backups" in prefs and vm.include_in_backups != prefs["include_in_backups"]:
+            vm.include_in_backups = prefs["include_in_backups"]
+            changed = True
+        if "kernel" in prefs and vm.kernel != prefs["kernel"]:
+            vm.kernel = prefs["kernel"]
+            changed = True
+        if "maxmem" in prefs and vm.maxmem != prefs["maxmem"]:
+            vm.maxmem = prefs["maxmem"]
+            changed = True
+        if "memory" in prefs and vm.memory != prefs["memory"]:
+            vm.memory = prefs["memory"]
+            changed = True
+        if "provides_network" in prefs and vm.provides_network != prefs["provides_network"]:
+            vm.provides_network = prefs["provides_network"]
+            changed = True
+        if "netvm" in prefs:
+            netvm = self.app.domains[prefs["netvm"]]
+            if vm.netvm != netvm:
+                vm.netvm = netvm
+                changed = True
+        if "default_dispvm" in prefs:
+            default_dispvm = self.app.domains[prefs["default_dispvm"]]
+            if vm.default_dispvm != default_dispvm:
+                vm.default_dispvm = default_dispvm
+                changed = True
+        if "template" in prefs:
+            template = self.app.domains[prefs["template"]]
+            if vm.template != template:
+                vm.template = template
+                changed = True
+        if "template_for_dispvms" in prefs and vm.template_for_dispvms != prefs["template_for_dispvms"]:
+            vm.template_for_dispvms = prefs["template_for_dispvms"]
+            changed = True
+        if "vcpus" in prefs and vm.vcpus != prefs["vcpus"]:
+            vm.vcpus = prefs["vcpus"]
+            changed = True
+        if "virt_mode" in prefs and vm.virt_mode != prefs["virt_mode"]:
+            vm.virt_mode = prefs["virt_mode"]
+            changed = True
+        return changed
+
 
     def undefine(self, vmname):
         """ Stop a domain, and then wipe it from the face of the earth.  (delete disk/config file) """
@@ -275,7 +325,34 @@ def core(module):
     res = dict()
 
     if preferences:
-        return VIRT_SUCCESS, {"status": preferences}
+        for key,val in preferences.items():
+            if not key in PREFS:
+                return VIRT_FAILED, {"Invalid preference": key}
+            if type(val) != PREFS[key]:
+                return VIRT_FAILED, {"Invalid preference value type": key}
+            # Make sure that the netvm exists
+            if key == "netvm" and val != "":
+                try:
+                    vm = v.get_vm(val)
+                except KeyError:
+                    return VIRT_FAILED, {"Missing netvm": val}
+                # Also the vm should provide network
+                if not vm.provides_network:
+                    return VIRT_FAILED, {"Missing netvm capability": val}
+                    template_for_dispvms
+
+            # Make sure that the default_dispvm exists
+            if key == "default_dispvm":
+                try:
+                    vm = v.get_vm(val)
+                except KeyError:
+                    return VIRT_FAILED, {"Missing default_dispvm": val}
+                # Also the vm should provide network
+                if not vm.template_for_dispvms:
+                    return VIRT_FAILED, {"Missing dispvm capability": val}
+        if state == "present" and guest:
+            changed = v.preferences(guest, preferences)
+        return VIRT_SUCCESS, {"Preferences updated": guest, "changed": changed}
 
     if state and command == 'list_vms':
         res = v.list_vms(state=state)
@@ -329,11 +406,11 @@ def core(module):
                 res['changed'] = True
                 res['msg'] = v.start(guest)
         elif state == 'shutdown':
-            if v.status(guest) is not 'shutdown':
+            if v.status(guest) is not 'halted':
                 res['changed'] = True
                 res['msg'] = v.shutdown(guest)
         elif state == 'destroyed':
-            if v.status(guest) is not 'shutdown':
+            if v.status(guest) is not 'halted':
                 res['changed'] = True
                 res['msg'] = v.destroy(guest)
         elif state == 'paused':
@@ -341,7 +418,7 @@ def core(module):
                 res['changed'] = True
                 res['msg'] = v.pause(guest)
         elif state == 'undefine':
-            if v.status(guest) is not 'shutdown':
+            if v.status(guest) is not 'halted':
                 res['changed'] = True
                 res['msg'] = v.undefine(guest)
         else:
@@ -357,7 +434,7 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             name=dict(type='str', aliases=['guest']),
-            state=dict(type='str', choices=['destroyed', 'pause', 'running', 'shutdown', 'undefine']),
+            state=dict(type='str', choices=['destroyed', 'pause', 'running', 'shutdown', 'undefine', 'present']),
             command=dict(type='str', choices=ALL_COMMANDS),
             label=dict(type='str', default='red'),
             vmtype=dict(type='str', default='AppVM'),
