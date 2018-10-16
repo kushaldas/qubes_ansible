@@ -1,0 +1,16 @@
+---
+- hosts: debian_templates
+  become: true
+  tasks:
+  - name: Apply updates to Debian templates
+    apt:
+        update_cache=yes
+        upgrade=dist
+
+- hosts: fedora_templates
+  become: true
+  tasks:
+  - name: Apply updates to Fedora templates
+    dnf:
+        name=*
+        state=latest
