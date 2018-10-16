@@ -1,0 +1,22 @@
+---
+- hosts: debian_templates
+  become: true
+  tasks:
+  - name: Apply updates to Debian templates
+    apt:
+        update_cache=yes
+        upgrade=dist
+
+- hosts: fedora_templates
+  become: true
+  tasks:
+  - name: Apply updates to Fedora templates
+    dnf:
+        name=*
+        state=latest
+
+- hosts: local
+  become: true
+  tasks:
+  - name: Apply updates to dom0
+    shell: qubes-dom0-update

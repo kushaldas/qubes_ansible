@@ -10,3 +10,17 @@ xchat
 
 [appvms:vars]
 ansible_connection=qubes
+
+[debian_templates]
+debian-9
+whonix-gw-14
+whonix-ws-14
+
+[debian_templates:vars]
+ansible_connection=qubes
+
+[fedora_templates]
+fedora-28
+
+[fedora_templates:vars]
+ansible_connection=qubes
