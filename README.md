@@ -25,7 +25,7 @@ we will put it in ``/usr/share/ansible_module``.
 
 ## Installing Ansible and setup of the our module/connection
 
-Install Ansible which everway you like. In **dom0** it would be like,
+Install Ansible whichever way you like. In **dom0** it would be,
 
 ```
 sudo qubes-dom0-update ansible-python3
@@ -43,21 +43,22 @@ connection_plugins = /usr/share/ansible_module/conns/
 ### How to write playbooks/roles tasks etc?
 
 
-Just keep in mind that the creation/detroying of the vms will require a
-**local** connection and will use the *qubesos* module.
+Just keep in mind that creating/destroying vms will require a **local** 
+connection and will use the *qubesos* module.
 
-To work on the remote VM, use **qubes** connection and use standard playbooks.
+To work on a remote VM, use **qubes** connection and use standard playbooks.
 
 
 ## Examples
 
-Check the examples directory in this repo.
+Check the [examples](examples/) directory in this repo.
 
 ## Under development
 
-This project is still very young, and the **qubesos** module will go under
-heavy development, and also the syntax/keywords will may change.
-
-
+This project is still very young, and, the **qubesos** module is under
+heavy development so the syntax/keywords may change in future.
 
 ### License GPLv3+
+
+Please see the [LICENSE](LICENSE) file for a complete copy of License.
+
