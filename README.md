@@ -8,7 +8,7 @@ module to create/destroy/maintain state of the VM(s).
 ## How to setup?
 
 Put the ``qubes-rpc/qubes.Ansible`` qrexec service file in to the templateVMs
-at ``/etc/qubes-rpc`` directory.
+at ``/etc/qubes-rpc`` directory. The file must be executable (``chmod 755``).
 
 If you are using running Ansible from **dom0**, then no other configuration
 is required. Remember that right now you can create/destroy VMs only from
