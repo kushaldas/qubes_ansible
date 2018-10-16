@@ -28,6 +28,12 @@ DOCUMENTATION = """
         default: inventory_hostname
         vars:
             - name: ansible_host
+      remote_user:
+        description:
+            - The user to execute as inside the vm (only available if running from dom0)
+        default: The *user* account as default in Qubes OS.
+        vars:
+            - name: ansible_user
 #        keyword:
 #            - name: hosts
 """
@@ -70,6 +76,8 @@ class Connection(ConnectionBase):
         self._hostname = subprocess.check_output(["hostname"]).decode("utf-8").strip()
         # Default username in Qubes
         self.user = "user"
+        if self._play_context.remote_user:
+            self.user =  self._play_context.remote_user
 
     def _qubes(self, cmd=None, in_data=None):
         """
@@ -85,6 +93,9 @@ class Connection(ConnectionBase):
         else:
             # For dom0
             local_cmd.extend(["qvm-run", "--pass-io", "--service"])
+            if self.user != "user":
+                # Means we have a remote_user value
+                local_cmd.extend(["-u", self.user])
 
         local_cmd.append(self._remote_vmname)
 
