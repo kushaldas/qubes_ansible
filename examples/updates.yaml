@@ -14,3 +14,9 @@
     dnf:
         name=*
         state=latest
+
+- hosts: local
+  become: true
+  tasks:
+  - name: Apply updates to dom0
+    shell: qubes-dom0-update
