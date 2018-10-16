@@ -77,7 +77,7 @@ class Connection(ConnectionBase):
         # Default username in Qubes
         self.user = "user"
         if self._play_context.remote_user:
-            self.user =  self._play_context.remote_user
+            self.user = self._play_context.remote_user
 
     def _qubes(self, cmd=None, in_data=None):
         """
@@ -182,7 +182,7 @@ class Connection(ConnectionBase):
                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
             stdout, stderr = p.communicate()
-            tmp_path = os.path.join("/var/tmp/", filename)
+            tmp_path = os.path.join(C.DEFAULT_LOCAL_TMP, filename)
             with open(tmp_path, "wb") as fobj:
                 fobj.write(stdout)
 
