@@ -14,6 +14,9 @@ If you are running Ansible from **dom0**, then no other configuration is
 required. Remember that right now you can create/destroy VMs only from
 **dom0**.
 
+It should also work from any VM wtih AdminAPI access. We need someone to test
+that out.
+
 
 If you want to use Ansible from any other AppVM(s) and maintain the state of
 the Operating System inside of the other VM(s). You will also need to place
