@@ -9,7 +9,6 @@
         label: blue
         state: present
         template: "debian-9"
-        command: create
 
     - name: Get it up and running
       qubesos:

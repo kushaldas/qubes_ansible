@@ -347,7 +347,7 @@ def core(module):
     label = module.params.get('label', 'red')
     template = module.params.get('template', None)
     netvm = module.params.get('netvm', "default")
-    preferences = module.params.get('preferences', None)
+    preferences = module.params.get('preferences', {})
 
     v = QubesVirt(module)
     res = dict()
@@ -381,6 +381,15 @@ def core(module):
         if state == "present" and guest and vmtype:
             changed, changed_values = v.preferences(guest, preferences, vmtype)
             return VIRT_SUCCESS, {"Preferences updated": changed_values, "changed": changed}
+
+    if state == "present" and guest and vmtype:
+        try:
+            v.get_vm(guest)
+            res = {"changed": False, "status": "VM is present."}
+        except KeyError:
+            v.create(guest, vmtype, label, template, netvm)
+            res = {'changed': True, 'created': guest}
+        return VIRT_SUCCESS, res
 
     if state and command == 'list_vms':
         res = v.list_vms(state=state)
