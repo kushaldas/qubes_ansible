@@ -7,7 +7,7 @@
       qubesos:
         guest: supansible
         label: blue
-        state: running
+        state: present
         template: "debian-9"
         command: create
 
@@ -15,12 +15,6 @@
       qubesos:
         guest: supansible
         state: running
-
-    - name: Test dicts
-      qubesos:
-        preferences:
-          memory: 1000
-          maxmemory: 3000
 
     - name: Create our xchat
       qubesos:

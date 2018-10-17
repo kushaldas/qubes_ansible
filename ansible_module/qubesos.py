@@ -251,9 +251,9 @@ class QubesVirt(object):
             self.create(vmname, vmtype)
             vm = self.get_vm(vmname)
         if "autostart" in prefs and vm.autostart != prefs["autostart"]:
-                vm.autostart = prefs["autostart"]
-                changed = True
-                values_changed.append("autostart")
+            vm.autostart = prefs["autostart"]
+            changed = True
+            values_changed.append("autostart")
         if "debug" in prefs and vm.debug != prefs["debug"]:
             vm.debug = prefs["debug"]
             changed = True
@@ -380,7 +380,7 @@ def core(module):
                     return VIRT_FAILED, {"Missing dispvm capability": val}
         if state == "present" and guest and vmtype:
             changed, changed_values = v.preferences(guest, preferences, vmtype)
-        return VIRT_SUCCESS, {"Preferences updated": changed_values, "changed": changed}
+            return VIRT_SUCCESS, {"Preferences updated": changed_values, "changed": changed}
 
     if state and command == 'list_vms':
         res = v.list_vms(state=state)
