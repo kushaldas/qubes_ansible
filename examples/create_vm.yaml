@@ -20,7 +20,6 @@
       qubesos:
         guest: xchat
         label: blue
-        state: running
         template: "fedora-28"
         command: create
 
