@@ -10,13 +10,12 @@
         preferences:
           memory: 1200
           maxmem: 2400
-          netvm: 'sys-firewall'
-          #default_dispvm: 'fedora-25-dvm'
-          #template: fedora-28
-          label: "blue"
+          netvm: 'sys-whonix'
+          label: "yellow"
+
     - name: Run the VM
       qubesos:
-        guest: xchat
+        guest: xchat2
         state: running
 
 

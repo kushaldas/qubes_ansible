@@ -1,8 +1,8 @@
 ---
-- hosts: xchat
+- hosts: xchat7
   tasks:
   - name: Ensure sl is at the latest version
-    dnf: name=sl state=latest
+    package: name=sl state=latest
   - name: example copying file with owner and permissions
     copy:
       src: foo.conf
