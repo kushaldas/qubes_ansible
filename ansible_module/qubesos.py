@@ -169,13 +169,20 @@ class QubesVirt(object):
         if vm.is_running():
             return "running"
         if vm.is_halted():
-            return "halted"
+            return "shutdown"
 
     def get_states(self):
         state = []
         for vm in self.app.domains:
             state.append("%s %s" % (vm.name, self.__get_state(vm.name)))
         return state
+
+    def list_vms(self, state):
+        res = []
+        for vm in self.app.domains:
+            if vm.name != "dom0" and state == self.__get_state(vm.name):
+                res.append("%s" % vm.name)
+        return res
 
     def info(self):
         info = dict()
@@ -324,7 +331,7 @@ class QubesVirt(object):
             # Because it is not running
 
         while True:
-            if self.__get_state(vmname) == "halted":
+            if self.__get_state(vmname) == "shutdown":
                 break
             time.sleep(1)
         del self.app.domains[vmname]
@@ -352,6 +359,7 @@ def core(module):
     v = QubesVirt(module)
     res = dict()
 
+    # Preferences will only work with state=present
     if preferences:
         for key,val in preferences.items():
             if not key in PREFS:
@@ -443,11 +451,11 @@ def core(module):
                 res['changed'] = True
                 res['msg'] = v.start(guest)
         elif state == 'shutdown':
-            if v.status(guest) is not 'halted':
+            if v.status(guest) is not 'shutdown':
                 res['changed'] = True
                 res['msg'] = v.shutdown(guest)
         elif state == 'destroyed':
-            if v.status(guest) is not 'halted':
+            if v.status(guest) is not 'shutdown':
                 res['changed'] = True
                 res['msg'] = v.destroy(guest)
         elif state == 'paused':
@@ -455,7 +463,7 @@ def core(module):
                 res['changed'] = True
                 res['msg'] = v.pause(guest)
         elif state == 'undefine':
-            if v.status(guest) is not 'halted':
+            if v.status(guest) is not 'shutdown':
                 res['changed'] = True
                 res['msg'] = v.undefine(guest)
         else:
