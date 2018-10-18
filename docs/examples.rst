@@ -210,3 +210,7 @@ You can run the playbook using the following command.
 ::
 
     ansible-playbook -i inventory -b install_packages.yaml
+
+
+You can also pass `-u different_user` or the set **ansible_user** value to run the above
+playbook as a different user in the vm.
