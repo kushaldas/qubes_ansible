@@ -14,6 +14,15 @@ to be tested.
 There are two major parts of the project, one **qubes** connection plugin, and one
 **qubesos** module.
 
+Clone the project
+------------------
+
+In an AppVM, clone the git repo (we assume this vm's name is development).
+
+::
+
+    git clone https://github.com/kushaldas/qubes_ansible
+
 Install the Ansible project
 -----------------------------
 

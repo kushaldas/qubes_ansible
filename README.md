@@ -65,3 +65,8 @@ heavy development so the syntax/keywords may change in future.
 
 Please see the [LICENSE](LICENSE) file for a complete copy of License.
 
+## Documentation
+
+Read it [online](https://qubes-ansible.readthedocs.io/en/latest/).
+
+
