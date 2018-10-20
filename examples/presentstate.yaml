@@ -7,7 +7,7 @@
       qubesos:
         guest: xchat2
         state: present
-        preferences:
+        properties:
           memory: 1200
           maxmem: 2400
           netvm: 'sys-whonix'
