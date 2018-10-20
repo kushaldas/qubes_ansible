@@ -30,7 +30,7 @@ DOCUMENTATION = """
             - name: ansible_host
       remote_user:
         description:
-            - The user to execute as inside the vm (only available if running from dom0)
+            - The user to execute as inside the vm.
         default: The *user* account as default in Qubes OS.
         vars:
             - name: ansible_user
@@ -81,34 +81,28 @@ class Connection(ConnectionBase):
 
     def _qubes(self, cmd=None, in_data=None):
         """
-        run qvm-run-vm executable
+        run qvm-run executable
 
-        :param cmd: base64 encoded cmd for remote system
+        :param cmd: cmd string for remote system
         :param in_data: data passed to qvm-run-vm's stdin
         :return: return code, stdout, stderr
         """
+        display.vvvv("CMD: ", cmd)
+        if not cmd.endswith("\n"):
+            cmd = cmd + "\n"
         local_cmd = []
-        if self._hostname != "dom0":
-            local_cmd.append("qvm-ansible")
-        else:
-            # For dom0
-            local_cmd.extend(["qvm-run", "--pass-io", "--service"])
-            if self.user != "user":
-                # Means we have a remote_user value
-                local_cmd.extend(["-u", self.user])
+
+        # For dom0
+        local_cmd.extend(["qvm-run", "--pass-io", "--service"])
+        if self.user != "user":
+            # Means we have a remote_user value
+            local_cmd.extend(["-u", self.user])
 
         local_cmd.append(self._remote_vmname)
 
-        if cmd:
-            # Encode the command string as base64 as it will be
-            # passed over using commandline.
-            cmd = to_bytes(cmd, errors='surrogate_or_strict')
-            encoded_cmd = base64.b64encode(cmd)
+        local_cmd.append("qubes.VMShell")
 
-            if self._hostname == "dom0":
-                encoded_cmd = b"qubes.Ansible+" + encoded_cmd
-
-            local_cmd.append(encoded_cmd)
+        #local_cmd.append(encoded_cmd)
         local_cmd = [to_bytes(i, errors='surrogate_or_strict') for i in local_cmd]
 
         display.vvvv("Local cmd: ", local_cmd)
@@ -117,6 +111,8 @@ class Connection(ConnectionBase):
         p = subprocess.Popen(local_cmd, shell=False, stdin=subprocess.PIPE,
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
+        # Here we are writing the actual command to the remote bash
+        p.stdin.write(to_bytes("%s" % cmd, errors='surrogate_or_strict'))
         stdout, stderr = p.communicate(input=in_data)
         stdout = to_bytes(stdout, errors='surrogate_or_strict')
         stderr = to_bytes(stderr, errors='surrogate_or_strict')
@@ -156,7 +152,8 @@ class Connection(ConnectionBase):
 
         # Now let us move the file to the right location
         filename = os.path.basename(in_path)
-        cmd = "mv {0} {1}".format(os.path.join("/home/user/QubesIncoming", self._hostname, filename), out_path)
+        cmd = "mv {0} {1}".format(os.path.join("/home/{0}/QubesIncoming".format(self.user), self._hostname,
+                                               filename), out_path)
 
         self._qubes(cmd)
 
@@ -169,25 +166,18 @@ class Connection(ConnectionBase):
         # Find the actual filename
         filename = os.path.basename(in_path)
 
-        if self._hostname != "dom0":  # Normal domU domains
-            cmd = "qvm-copy-to-vm {0} {1}".format(self._hostname, in_path)
-            self._qubes(cmd)
+        # We are running in dom0
+        cmd_args_list = ["qvm-run", "--pass-io", self._remote_vmname, "'cat {0}'".format(in_path)]
+        p = subprocess.Popen(cmd_args_list, shell=False, stdin=subprocess.PIPE,
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-            # Let us to move the file to the right path
-            cmd = ["mv", os.path.join("/home/user/QubesIncoming/", self._remote_vmname, filename, out_path)]
-        else:
-            # We are running in dom0
-            cmd_args_list = ["qvm-run", "--pass-io", self._remote_vmname, "'cat {0}'".format(in_path)]
-            p = subprocess.Popen(cmd_args_list, shell=False, stdin=subprocess.PIPE,
-                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = p.communicate()
+        tmp_path = os.path.join(C.DEFAULT_LOCAL_TMP, filename)
+        with open(tmp_path, "wb") as fobj:
+            fobj.write(stdout)
 
-            stdout, stderr = p.communicate()
-            tmp_path = os.path.join(C.DEFAULT_LOCAL_TMP, filename)
-            with open(tmp_path, "wb") as fobj:
-                fobj.write(stdout)
-
-            # Now create the mv command to move to the right place
-            cmd = ["mv", tmp_path, out_path]
+        # Now create the mv command to move to the right place
+        cmd = ["mv", tmp_path, out_path]
 
         subprocess.check_call(cmd)
 
