@@ -31,7 +31,7 @@ Only the *guest* name is the must have value, by default it will use the system 
 The default label color is **red**.
 
 
-Setting different preference values to a given vm
+Setting different property values to a given vm
 --------------------------------------------------
 
 .. note:: This must be done when the vm is in shutdown state. Means this will also work while creating the vm.
@@ -48,7 +48,7 @@ Setting different preference values to a given vm
         qubesos:
             guest: xchat2
             state: present
-            preferences:
+            properties:
               memory: 1200
               maxmem: 2400
               netvm: 'sys-whonix'
@@ -69,10 +69,10 @@ Setting different preference values to a given vm
 .. note:: Always remember to move the state to running to get the vm up and running.
 
 
-Available preferences
+Available properties
 ----------------------
 
-The following are the different available preferences and their data type.
+The following are the different available properties and their data type.
 
 - 'autostart': bool
 - 'debug': bool
@@ -91,7 +91,7 @@ The following are the different available preferences and their data type.
 
 
 If you want to make changes to any existing vm, then first move it to *shutdown*
-state and then use preferences along with the *present* state to change any
+state and then use properties along with the *present* state to change any
 value.
 
 

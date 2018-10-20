@@ -63,35 +63,8 @@ The above configuration file will help Ansible to find the module and the
 connection plugin.
 
 
-Copy over the qubes.Ansible qrexec service to the templates
-------------------------------------------------------------
 
-In future we hope this service will come by default in the templates. For now,
-we can just copy over the service to the right location to all of the
-templateVMs.
-
-From the *development* vm, inside of our project directory, give this command.
-
-::
-
-    qvm-copy qubes-rpc/qubes.Ansible
-
-And, after coping the file, start the template, and copy it to the right place.
-
-::
-
-    sudo mv ~/QubesIncoming/development/qubes.Ansible /etc/qubes-rpc/
-    chmod +x /etc/qubes-rpc/qubes.Ansible
-
-
-Also install the ``bin/qvm-ansible`` command if you want to manage things from
-an admin domU VM.
-
-**qubes-core-admin-client** is the packge which has all the required Python
-modules and also the commands. This is by default installed in the **dom0**.
-
-
-TODO (open qubestion on how to install it)
+TODO (open question on how to install it)
 ===========================================
 
 Should we just make sure if any vm is in running state, then that file should be

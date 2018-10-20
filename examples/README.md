@@ -56,7 +56,7 @@ ansible-playbook-3 -i inventory presentstate.yaml
 ```
 
 
-## Preference values currently available
+## Property values currently available
 
 - autostart
 - debug

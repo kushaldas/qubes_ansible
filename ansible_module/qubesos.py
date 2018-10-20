@@ -135,7 +135,7 @@ VIRT_STATE_NAME_MAP = {
     6: 'crashed',
 }
 
-PREFS = {'autostart': bool,
+PROPS = {'autostart': bool,
          'debug': bool,
          'include_in_backups': bool,
          'kernel': str,
@@ -246,8 +246,8 @@ class QubesVirt(object):
         vm.force_shutdown()
         return 0
 
-    def preferences(self, vmname, prefs, vmtype):
-        "Sets the given preferences to the VM"
+    def properties(self, vmname, prefs, vmtype):
+        "Sets the given properties to the VM"
         changed = False
         vm = None
         values_changed = []
@@ -354,18 +354,18 @@ def core(module):
     label = module.params.get('label', 'red')
     template = module.params.get('template', None)
     netvm = module.params.get('netvm', "default")
-    preferences = module.params.get('preferences', {})
+    properties = module.params.get('properties', {})
 
     v = QubesVirt(module)
     res = dict()
 
-    # Preferences will only work with state=present
-    if preferences:
-        for key,val in preferences.items():
-            if not key in PREFS:
-                return VIRT_FAILED, {"Invalid preference": key}
-            if type(val) != PREFS[key]:
-                return VIRT_FAILED, {"Invalid preference value type": key}
+    # properties will only work with state=present
+    if properties:
+        for key,val in properties.items():
+            if not key in PROPS:
+                return VIRT_FAILED, {"Invalid property": key}
+            if type(val) != PROPS[key]:
+                return VIRT_FAILED, {"Invalid property value type": key}
             # Make sure that the netvm exists
             if key == "netvm" and val != "":
                 try:
@@ -387,8 +387,8 @@ def core(module):
                 if not vm.template_for_dispvms:
                     return VIRT_FAILED, {"Missing dispvm capability": val}
         if state == "present" and guest and vmtype:
-            changed, changed_values = v.preferences(guest, preferences, vmtype)
-            return VIRT_SUCCESS, {"Preferences updated": changed_values, "changed": changed}
+            changed, changed_values = v.properties(guest, properties, vmtype)
+            return VIRT_SUCCESS, {"Properties updated": changed_values, "changed": changed}
 
     if state == "present" and guest and vmtype:
         try:
@@ -485,7 +485,7 @@ def main():
             vmtype=dict(type='str', default='AppVM'),
             template=dict(type='str', default='default'),
             netvm=dict(type='str', default='default'),
-            preferences=dict(type='dict', default={}),
+            properties=dict(type='dict', default={}),
         ),
     )
 
