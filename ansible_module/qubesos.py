@@ -107,7 +107,7 @@ import traceback
 
 try:
     import qubesadmin
-    from qubesadmin.exc import QubesVMNotStartedError
+    from qubesadmin.exc import QubesVMNotStartedError, QubesTagNotFoundError
 except ImportError:
     HAS_QUBES = False
 else:
@@ -122,7 +122,7 @@ VIRT_SUCCESS = 0
 VIRT_UNAVAILABLE = 2
 
 ALL_COMMANDS = []
-VM_COMMANDS = ['create', 'destroy', 'pause', 'shutdown', 'status', 'start', 'stop', 'unpause']
+VM_COMMANDS = ['create', 'destroy', 'pause', 'shutdown', 'status', 'start', 'stop', 'unpause', 'removetags']
 HOST_COMMANDS = ['info', 'list_vms', 'get_states']
 ALL_COMMANDS.extend(VM_COMMANDS)
 ALL_COMMANDS.extend(HOST_COMMANDS)
@@ -343,6 +343,12 @@ class QubesVirt(object):
         """
         return self.__get_state(vmname)
 
+    def tags(self, vmname, tags):
+        "Adds a list of tags to the vm"
+        vm = self.get_vm(vmname)
+        for tag in tags:
+            vm.tags.add(tag)
+        return 0
 
 
 def core(module):
@@ -355,6 +361,7 @@ def core(module):
     template = module.params.get('template', None)
     netvm = module.params.get('netvm', "default")
     properties = module.params.get('properties', {})
+    tags = module.params.get('tags', [])
 
     v = QubesVirt(module)
     res = dict()
@@ -388,6 +395,9 @@ def core(module):
                     return VIRT_FAILED, {"Missing dispvm capability": val}
         if state == "present" and guest and vmtype:
             changed, changed_values = v.properties(guest, properties, vmtype)
+            if tags:
+                # Apply the tags
+                v.tags(guest, tags)
             return VIRT_SUCCESS, {"Properties updated": changed_values, "changed": changed}
 
     if state == "present" and guest and vmtype:
@@ -396,6 +406,9 @@ def core(module):
             res = {"changed": False, "status": "VM is present."}
         except KeyError:
             v.create(guest, vmtype, label, template, netvm)
+            if tags:
+                # Apply the tags
+                v.tags(guest, tags)
             res = {'changed': True, 'created': guest}
         return VIRT_SUCCESS, res
 
@@ -425,6 +438,18 @@ def core(module):
                     v.create(guest, vmtype, label, template, netvm)
                     res = {'changed': True, 'created': guest}
                 return VIRT_SUCCESS, res
+            elif command == 'removetags':
+                vm = v.get_vm(guest)
+                changed = False
+                if not tags:
+                    return VIRT_FAILED, {"Error": "Missing tag(s) to remove."}
+                for tag in tags:
+                    try:
+                        vm.tags.remove(tag)
+                        changed = True
+                    except QubesTagNotFoundError:
+                        pass
+                return VIRT_SUCCESS, {"Message": "Removed the tag(s).", "changed": changed}
             res = getattr(v, command)(guest)
             if not isinstance(res, dict):
                 res = {command: res}
@@ -486,6 +511,7 @@ def main():
             template=dict(type='str', default='default'),
             netvm=dict(type='str', default='default'),
             properties=dict(type='dict', default={}),
+            tags=dict(type='list', default=[]),
         ),
     )
 

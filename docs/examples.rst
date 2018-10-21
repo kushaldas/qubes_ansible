@@ -94,6 +94,26 @@ If you want to make changes to any existing vm, then first move it to *shutdown*
 state and then use properties along with the *present* state to change any
 value.
 
+Adding tags to a vm
+-------------------
+
+We can also add tags to a VM using the tags values. It has to be a list of strings.
+
+::
+
+    ---
+    - hosts: local
+    connection: local
+
+    tasks:
+        - name: Make sure right tags are assigned
+        qubesos:
+            guest: xchat2
+            state: present
+            tags:
+              - "Linux"
+              - "IRC"
+              - "Chat"
 
 Different available states
 ---------------------------
@@ -134,6 +154,26 @@ The *destroy* command will forcefully shutdown the guest now.
 
 .. note:: Use the *destroyed* state to properly destroy a vm than this command.
 
+removetags
++++++++++++
+
+Use this command with a list of tags to remove them from a given VM.
+
+::
+
+    ---
+    - hosts: local
+    connection: local
+
+    tasks:
+        - name: Make sure right tags are removed
+        qubesos:
+            guest: xchat2
+            command: removetags
+            tags:
+              - "Linux"
+              - "IRC"
+              - "Chat"
 
 Find all vms with a particular state
 --------------------------------------
