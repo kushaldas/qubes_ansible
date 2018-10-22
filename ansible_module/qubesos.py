@@ -108,6 +108,7 @@ import traceback
 try:
     import qubesadmin
     from qubesadmin.exc import QubesVMNotStartedError, QubesTagNotFoundError
+    from jinja2 import Template
 except ImportError:
     HAS_QUBES = False
 else:
@@ -123,7 +124,7 @@ VIRT_UNAVAILABLE = 2
 
 ALL_COMMANDS = []
 VM_COMMANDS = ['create', 'destroy', 'pause', 'shutdown', 'status', 'start', 'stop', 'unpause', 'removetags']
-HOST_COMMANDS = ['info', 'list_vms', 'get_states']
+HOST_COMMANDS = ['info', 'list_vms', 'get_states', 'createinventory']
 ALL_COMMANDS.extend(VM_COMMANDS)
 ALL_COMMANDS.extend(HOST_COMMANDS)
 
@@ -151,6 +152,43 @@ PROPS = {'autostart': bool,
          'netvm': str
         }
 
+
+def create_inventory(result):
+    "Creates the inventory file dynamically for QubesOS"
+    template_str = """[local]
+localhost
+
+[local:vars]
+ansible_connection=local
+
+[appvms]
+{% for item in result.AppVM %}
+{{ item -}}
+{% endfor %}
+
+[templatevms]
+{% for item in result.TemplateVM %}
+{{ item -}}
+{% endfor %}
+
+[standalonevms]
+{% for item in result.StandaloneVM %}
+{{ item -}}
+{% endfor %}
+
+[appvms:vars]
+ansible_connection=qubes
+
+[templatevms:vars]
+ansible_connection=qubes
+
+[standalone:vars]
+ansible_connection=qubes
+"""
+    template = Template(template_str)
+    res = template.render(result=result)
+    with open("inventory", "w") as fobj:
+        fobj.write(res)
 
 
 class QubesVirt(object):
@@ -182,6 +220,13 @@ class QubesVirt(object):
         for vm in self.app.domains:
             if vm.name != "dom0" and state == self.__get_state(vm.name):
                 res.append("%s" % vm.name)
+        return res
+
+    def all_vms(self):
+        res = {}
+        for vm in self.app.domains:
+            if vm.name != "dom0":
+                res.setdefault(vm.klass, []).append(vm.name)
         return res
 
     def info(self):
@@ -423,7 +468,10 @@ def core(module):
         res = {"states": states}
         return VIRT_SUCCESS, res
 
-
+    if command == "createinventory":
+        result = v.all_vms()
+        create_inventory(result)
+        return VIRT_SUCCESS, {"status": "successful"}
 
     if command:
         if command in VM_COMMANDS:

@@ -191,36 +191,16 @@ In the same way you can find vms with *shutdown* or *paused* state.
 Our example inventory file
 ---------------------------
 
-We will use the following inventory file for the following examples.
+We can use the following command to create our inventory file.
+
+.. warning:: Remember that the following command will rewrite the inventory file.
+
 
 ::
 
-    [local]
-    localhost
+    ansible-3 localhost -m qubesos -a 'command=createinventory'
 
-    [local:vars]
-    ansible_connection=local
 
-    [appvms]
-    supansible
-    xchat7
-
-    [appvms:vars]
-    ansible_connection=qubes
-
-    [debian_templates]
-    debian-9
-    whonix-gw-14
-    whonix-ws-14
-
-    [debian_templates:vars]
-    ansible_connection=qubes
-
-    [fedora_templates]
-    fedora-28
-
-    [fedora_templates:vars]
-    ansible_connection=qubes
 
 Install a package and copy to file to the remote vm and fetch some file back
 ----------------------------------------------------------------------------
@@ -254,3 +234,56 @@ You can run the playbook using the following command.
 
 You can also pass `-u different_user` or the set **ansible_user** value to run the above
 playbook as a different user in the vm.
+
+
+Execute a command in every running vm
+---------------------------------------
+
+First remember to create our inventory file using ``createinventory`` command.
+Then you can use the following playbook. We are just running ``hostname`` command
+in every running vm.
+
+::
+
+    ---
+    - hosts: localhost
+    connection: local
+    tasks:
+        - name: Find running hosts
+        qubesos:
+            command: list_vms
+            state: running
+        register: rhosts
+
+    - hosts: "{{ hostvars['localhost']['rhosts']['list_vms'] }}"
+    connection: qubes
+    tasks:
+        - name: get hostname
+        command: hostname
+
+
+Execute a command in every running vm except sys vms
+-----------------------------------------------------
+
+::
+
+    ---
+    - hosts: localhost
+    connection: local
+    tasks:
+        - name: Find running hosts
+        qubesos:
+            command: list_vms
+            state: running
+        register: rhosts
+
+        - name: Find non system vms
+        set_fact:
+            myvms: "{% for name in rhosts.list_vms %}{% if not name.startswith('sys-') %}{{ name }},{% endif %}{% endfor %}"
+
+
+    - hosts: "{{ hostvars['localhost']['myvms'] }}"
+    connection: qubes
+    tasks:
+        - name: Get hostname
+        command: hostname
