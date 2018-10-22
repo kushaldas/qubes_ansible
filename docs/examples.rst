@@ -7,6 +7,27 @@ to the syntax of the commands and available options.
 For now please check the given examples below to learn more.
 
 
+Our example inventory file
+---------------------------
+
+We can use the following command to create our inventory file. This will
+automatically include all of the VMs in your Qubes. You'll have to re-run
+it after creating new VMs, if you want ansible to be able to work with them.
+
+.. warning:: Remember that the following command will rewrite the inventory file.
+
+
+::
+
+    ansible-3 localhost -m qubesos -a 'command=createinventory'
+
+Once you have an inventory file, you can run ansible playbooks like this:
+
+::
+
+    ansible-playbook-3 -i inventory my_playbook.yaml
+
+
 Make sure a vm is present
 -------------------------
 
@@ -59,7 +80,7 @@ Setting different property values to a given vm
         qubesos:
             guest: xchat2
             state: present
-           
+
         - name: Run the xchat2 VM
         qubesos:
             guest: xchat2
@@ -186,20 +207,6 @@ The following example will find all the vms with running state.
 
 
 In the same way you can find vms with *shutdown* or *paused* state.
-
-
-Our example inventory file
----------------------------
-
-We can use the following command to create our inventory file.
-
-.. warning:: Remember that the following command will rewrite the inventory file.
-
-
-::
-
-    ansible-3 localhost -m qubesos -a 'command=createinventory'
-
 
 
 Install a package and copy to file to the remote vm and fetch some file back
