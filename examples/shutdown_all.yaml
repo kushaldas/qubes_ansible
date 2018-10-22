@@ -1,0 +1,18 @@
+---
+- hosts: localhost
+  connection: local
+  tasks:
+    - name: Find running hosts
+      qubesos:
+        command: list_vms
+        state: running
+      register: rhosts
+
+    - debug: var=rhosts
+
+    - name: Shutdown each vm
+      qubesos:
+        command: destroy
+        guest: "{{ item }}"
+      with_items: "{{ rhosts.list_vms }}"
+      when: item.startswith("sys-") != True

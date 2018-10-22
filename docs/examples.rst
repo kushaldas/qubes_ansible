@@ -287,3 +287,36 @@ Execute a command in every running vm except sys vms
     tasks:
         - name: Get hostname
         command: hostname
+
+Shutdown all vms except the system vms
+----------------------------------------
+
+We are not shutting down any VM which starts with **sys-** in this example.
+
+::
+
+    ---
+    - hosts: localhost
+    connection: local
+    tasks:
+        - name: Find running hosts
+        qubesos:
+            command: list_vms
+            state: running
+        register: rhosts
+
+        - debug: var=rhosts
+
+        - name: Shutdown each vm
+        qubesos:
+            command: destroy
+            guest: "{{ item }}"
+        with_items: "{{ rhosts.list_vms }}"
+        when: item.startswith("sys-") != True
+
+
+You can use the above ``shutdown_all.yaml`` playbook using the following command.
+
+::
+
+    ansible-playbook -i inventory -b shutdown_all.yaml
