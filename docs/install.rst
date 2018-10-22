@@ -44,8 +44,8 @@ Use the following commands to copy it over in **dom0**.
 
     sudo su -
     mkdir -p /usr/share/ansible_module/conns
-    qvm-run --pass-io development /home/user/qubes_ansible/ansible_module/qubesos.py > /usr/share/ansible_module/qubesos.py
-    qvm-run --pass-io development /home/user/qubes_ansible/ansible_module/conns/qubes.py > /usr/share/ansible_module/conns/qubes.py
+    qvm-run --pass-io development 'cat /home/user/qubes_ansible/ansible_module/qubesos.py' > /usr/share/ansible_module/qubesos.py
+    qvm-run --pass-io development 'cat /home/user/qubes_ansible/ansible_module/conns/qubes.py' > /usr/share/ansible_module/conns/qubes.py
 
 
 Setup the configuration file
@@ -56,7 +56,7 @@ We will add the following two lines to ``/etc/ansible/ansible.cfg`` file.
 ::
 
     library = /usr/share/ansible_module/
-    connection_plugins = /usr/share/ansible_module/conns/ 
+    connection_plugins = /usr/share/ansible_module/conns/
 
 
 The above configuration file will help Ansible to find the module and the
@@ -69,4 +69,3 @@ TODO (open question on how to install it)
 
 Should we just make sure if any vm is in running state, then that file should be
 inside in the right place? or copy it over there?
-
