@@ -1,4 +1,4 @@
-## Ansible connection and moudle for QubesOS
+## Ansible connection and module for QubesOS
 
 This is a written from scratch project to have a default Ansible connection
 plugin to interact with [Qubes OS](https://qubes-os.org). There is also an
@@ -10,7 +10,7 @@ Ansible module to create/destroy/maintain state of the VM(s).
 Put the ``ansible_module`` directory in a known place; in our example,
 we will put it in ``/usr/share/ansible_module``.
 
-Remember that this project will only from **dom0** or any VM wtih AdminAPI
+Remember that this project will only from **dom0** or any VM with AdminAPI
 access.
 
 
