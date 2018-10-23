@@ -266,15 +266,21 @@ class QubesVirt(object):
     def create(self, vmname, vmtype="AppVM", label="red", template=None, netvm="default"):
         """ Start the machine via the given vmid """
         network_vm = None
+        template_vm = ""
+        if template:
+            template_vm = template
         if netvm == "default":
             network_vm = self.app.default_netvm
         elif not netvm:
             network_vm = None
         else:
             network_vm = self.get_vm(netvm)
-
-        vm = self.app.add_new_vm(vmtype, vmname, label, template=template)
-        vm.netvm = network_vm
+        if vmtype == "AppVM":
+            vm = self.app.add_new_vm(vmtype, vmname, label, template=template_vm)
+            vm.netvm = network_vm
+        elif vmtype in ["StandaloneVM", "TemplateVM"] and template_vm:
+            vm = self.app.clone_vm(template_vm, vmname, vmtype)
+            vm.label = label
         return 0
 
     def start(self, vmname):
@@ -291,7 +297,7 @@ class QubesVirt(object):
         vm.force_shutdown()
         return 0
 
-    def properties(self, vmname, prefs, vmtype):
+    def properties(self, vmname, prefs, vmtype, label, vmtemplate):
         "Sets the given properties to the VM"
         changed = False
         vm = None
@@ -300,7 +306,7 @@ class QubesVirt(object):
             vm = self.get_vm(vmname)
         except KeyError:
             # Means first we have to create the vm
-            self.create(vmname, vmtype)
+            self.create(vmname, vmtype, label, vmtemplate)
             vm = self.get_vm(vmname)
         if "autostart" in prefs and vm.autostart != prefs["autostart"]:
             vm.autostart = prefs["autostart"]
@@ -404,7 +410,6 @@ def core(module):
     vmtype = module.params.get('vmtype', 'AppVM')
     label = module.params.get('label', 'red')
     template = module.params.get('template', None)
-    netvm = module.params.get('netvm', "default")
     properties = module.params.get('properties', {})
     tags = module.params.get('tags', [])
 
@@ -439,18 +444,19 @@ def core(module):
                 if not vm.template_for_dispvms:
                     return VIRT_FAILED, {"Missing dispvm capability": val}
         if state == "present" and guest and vmtype:
-            changed, changed_values = v.properties(guest, properties, vmtype)
+            changed, changed_values = v.properties(guest, properties, vmtype, label, template)
             if tags:
                 # Apply the tags
                 v.tags(guest, tags)
             return VIRT_SUCCESS, {"Properties updated": changed_values, "changed": changed}
 
+    # This is without any properties
     if state == "present" and guest and vmtype:
         try:
             v.get_vm(guest)
             res = {"changed": False, "status": "VM is present."}
         except KeyError:
-            v.create(guest, vmtype, label, template, netvm)
+            v.create(guest, vmtype, label, template)
             if tags:
                 # Apply the tags
                 v.tags(guest, tags)
@@ -557,7 +563,6 @@ def main():
             label=dict(type='str', default='red'),
             vmtype=dict(type='str', default='AppVM'),
             template=dict(type='str', default='default'),
-            netvm=dict(type='str', default='default'),
             properties=dict(type='dict', default={}),
             tags=dict(type='list', default=[]),
         ),

@@ -15,11 +15,5 @@
         guest: supansible
         state: running
 
-    - name: Create our xchat
-      qubesos:
-        guest: xchat
-        label: blue
-        template: "fedora-28"
-        command: create
 
 
