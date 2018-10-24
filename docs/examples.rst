@@ -109,11 +109,48 @@ The following are the different available properties and their data type.
 - 'virt_mode': str
 - 'default_dispvm': str
 - 'netvm': str
+- 'features': dict[str,str]
 
 
 If you want to make changes to any existing vm, then first move it to *shutdown*
 state and then use properties along with the *present* state to change any
 value.
+
+We can even add/update/remove ``features`` from a VM using properties.
+
+::
+
+    ---
+    - hosts: local
+    connection: local
+
+    tasks:
+        - name: Make sure the VM is present with right features
+        qubesos:
+            guest: xchat2
+            state: present
+            properties:
+              memory: 1200
+              maxmem: 2400
+              netvm: 'sys-whonix'
+              default_dispvm: 'fedora-28-dvm'
+              label: "yellow"
+              features:
+                life: "better"
+                can_fix_world_problem: False
+                news: "good"
+
+
+To delete a feature (if that exists), mark the value as **"None"**. To make it
+an empty string, that is the False value, use **""** as value. Example is given
+below.
+
+::
+
+    features:
+      life: "None"
+      news: ""
+
 
 Adding tags to a vm
 -------------------

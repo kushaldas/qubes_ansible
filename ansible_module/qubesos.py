@@ -149,7 +149,8 @@ PROPS = {'autostart': bool,
          'vcpus': int,
          'virt_mode': str,
          'default_dispvm': str,
-         'netvm': str
+         'netvm': str,
+         'features': dict,
         }
 
 
@@ -370,6 +371,27 @@ class QubesVirt(object):
             vm.virt_mode = prefs["virt_mode"]
             changed = True
             values_changed.append("virt_mode")
+        if "features" in prefs:
+            did_feature_changed = False
+            for key, value in prefs["features"].items():
+                if value == "" and key in vm.features:
+                    vm.features[key] = ""
+                    changed = True
+                    did_feature_changed = True
+                elif value == "None" and key in vm.features:
+                    del vm.features[key]
+                    changed = True
+                    did_feature_changed = True
+                elif key in vm.features and value != vm.features[key]:
+                    vm.features[key] = value
+                    changed = True
+                    did_feature_changed = True
+                elif not key in vm.features and value != "None":
+                    vm.features[key] = value
+                    changed = True
+                    did_feature_changed = True
+            if did_feature_changed:
+                values_changed.append("features")
         return changed, values_changed
 
 
