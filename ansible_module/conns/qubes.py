@@ -17,7 +17,7 @@ DOCUMENTATION = """
     description:
         - Run commands or put/fetch files to an existing Qubes AppVM using qubes tools.
 
-    author: Kushal Das (mail@kushaldas.in)
+    author: Kushal Das (@kushaldas)
 
     version_added: "2.8"
 
@@ -79,7 +79,7 @@ class Connection(ConnectionBase):
         if self._play_context.remote_user:
             self.user = self._play_context.remote_user
 
-    def _qubes(self, cmd=None, in_data=None):
+    def _qubes(self, cmd=None, in_data=None, shell="qubes.VMShell"):
         """
         run qvm-run executable
 
@@ -100,9 +100,8 @@ class Connection(ConnectionBase):
 
         local_cmd.append(self._remote_vmname)
 
-        local_cmd.append("qubes.VMShell")
+        local_cmd.append(shell)
 
-        #local_cmd.append(encoded_cmd)
         local_cmd = [to_bytes(i, errors='surrogate_or_strict') for i in local_cmd]
 
         display.vvvv("Local cmd: ", local_cmd)
@@ -138,24 +137,21 @@ class Connection(ConnectionBase):
         return rc, stdout, stderr
 
     def put_file(self, in_path, out_path):
-        """ Place a local file located in 'in_path' inside container at 'out_path' """
+        """ Place a local file located in 'in_path' inside VM at 'out_path' """
         super(Connection, self).put_file(in_path, out_path)
         display.vvv("PUT %s TO %s" % (in_path, out_path), host=self._remote_vmname)
 
-        cmd = "qvm-copy-to-vm " + self._remote_vmname + " " + in_path
-        cmd_args_list = shlex.split(to_native(cmd, errors='surrogate_or_strict'))
+        with open(in_path, "rb") as fobj:
+            source_data = fobj.read()
 
-        p = subprocess.Popen(cmd_args_list, shell=False, stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        retcode, dummy, dummy = self._qubes('cat > "{0}"\n'.format(out_path), source_data, "qubes.VMRootShell")
+        # if qubes.VMRootShell service not supported, fallback to qubes.VMShell and
+        # hope it will have appropriate permissions
+        if retcode == 127:
+            retcode, dummy, dummy = self._qubes('cat > "{0}"\n'.format(out_path), source_data)
 
-        stdout, stderr = p.communicate()
-
-        # Now let us move the file to the right location
-        filename = os.path.basename(in_path)
-        cmd = "mv {0} {1}".format(os.path.join("/home/{0}/QubesIncoming".format(self.user), self._hostname,
-                                               filename), out_path)
-
-        self._qubes(cmd)
+        if retcode != 0:
+            raise RuntimeError('Failed to write target file {0}'.format(out_path))
 
     def fetch_file(self, in_path, out_path):
         """ obtain file specified via 'in_path' from the container and place it at 'out_path' """
