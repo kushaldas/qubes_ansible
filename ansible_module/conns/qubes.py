@@ -59,9 +59,7 @@ except ImportError:
 
 # this _has to be_ named Connection
 class Connection(ConnectionBase):
-    """
-    This is a connection plugin for qubes: it uses qubes-run-vm binary to interact with the containers
-    """
+    """This is a connection plugin for qubes: it uses qubes-run-vm binary to interact with the containers."""
 
     # String used to identify this Connection class from other classes
     transport = 'qubes'
@@ -80,8 +78,7 @@ class Connection(ConnectionBase):
             self.user = self._play_context.remote_user
 
     def _qubes(self, cmd=None, in_data=None, shell="qubes.VMShell"):
-        """
-        run qvm-run executable
+        """run qvm-run executable
 
         :param cmd: cmd string for remote system
         :param in_data: data passed to qvm-run-vm's stdin
@@ -118,15 +115,13 @@ class Connection(ConnectionBase):
         return p.returncode, stdout, stderr
 
     def _connect(self):
-        """
-        No persistent connection is being maintained.
-        """
+        """No persistent connection is being maintained."""
         super(Connection, self)._connect()
         self._connected = True
 
     @ensure_connect
     def exec_command(self, cmd, in_data=None, sudoable=False):
-        """ run specified command in a running QubesVM """
+        """Run specified command in a running QubesVM """
         super(Connection, self).exec_command(cmd, in_data=in_data, sudoable=sudoable)
 
         display.vvvv("CMD IS: %s" % cmd)
@@ -154,10 +149,9 @@ class Connection(ConnectionBase):
             raise RuntimeError('Failed to write target file {0}'.format(out_path))
 
     def fetch_file(self, in_path, out_path):
-        """ obtain file specified via 'in_path' from the container and place it at 'out_path' """
+        """Obtain file specified via 'in_path' from the container and place it at 'out_path' """
         super(Connection, self).fetch_file(in_path, out_path)
         display.vvv("FETCH %s TO %s" % (in_path, out_path), host=self._remote_vmname)
-
 
         # We are running in dom0
         cmd_args_list = ["qvm-run", "--pass-io", self._remote_vmname, "'cat {0}'".format(in_path)]
@@ -166,7 +160,6 @@ class Connection(ConnectionBase):
             p.communicate()
             if p.returncode != 0:
                 raise RuntimeError('Failed to write target file {0}'.format(out_path))
-
 
     def close(self):
         """ Closing the connection """
