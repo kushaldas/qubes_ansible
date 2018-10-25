@@ -158,24 +158,15 @@ class Connection(ConnectionBase):
         super(Connection, self).fetch_file(in_path, out_path)
         display.vvv("FETCH %s TO %s" % (in_path, out_path), host=self._remote_vmname)
 
-        cmd = ""
-        # Find the actual filename
-        filename = os.path.basename(in_path)
 
         # We are running in dom0
         cmd_args_list = ["qvm-run", "--pass-io", self._remote_vmname, "'cat {0}'".format(in_path)]
-        p = subprocess.Popen(cmd_args_list, shell=False, stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        with open(out_path, "wb") as fobj:
+            p = subprocess.Popen(cmd_args_list, shell=False, stdout=fobj)
+            p.communicate()
+            if p.returncode != 0:
+                raise RuntimeError('Failed to write target file {0}'.format(out_path))
 
-        stdout, stderr = p.communicate()
-        tmp_path = os.path.join(C.DEFAULT_LOCAL_TMP, filename)
-        with open(tmp_path, "wb") as fobj:
-            fobj.write(stdout)
-
-        # Now create the mv command to move to the right place
-        cmd = ["mv", tmp_path, out_path]
-
-        subprocess.check_call(cmd)
 
     def close(self):
         """ Closing the connection """
