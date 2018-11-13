@@ -71,7 +71,6 @@ class Connection(ConnectionBase):
 
         self._remote_vmname = self._play_context.remote_addr
         self._connected = False
-        self._hostname = subprocess.check_output(["hostname"]).decode("utf-8").strip()
         # Default username in Qubes
         self.user = "user"
         if self._play_context.remote_user:
@@ -108,10 +107,8 @@ class Connection(ConnectionBase):
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         # Here we are writing the actual command to the remote bash
-        p.stdin.write(to_bytes("%s" % cmd, errors='surrogate_or_strict'))
+        p.stdin.write(to_bytes(cmd, errors='surrogate_or_strict'))
         stdout, stderr = p.communicate(input=in_data)
-        stdout = to_bytes(stdout, errors='surrogate_or_strict')
-        stderr = to_bytes(stderr, errors='surrogate_or_strict')
         return p.returncode, stdout, stderr
 
     def _connect(self):
@@ -146,7 +143,7 @@ class Connection(ConnectionBase):
             retcode, dummy, dummy = self._qubes('cat > "{0}"\n'.format(out_path), source_data)
 
         if retcode != 0:
-            raise RuntimeError('Failed to write target file {0}'.format(out_path))
+            raise RuntimeError('Failed to put_file to {0}'.format(out_path))
 
     def fetch_file(self, in_path, out_path):
         """Obtain file specified via 'in_path' from the container and place it at 'out_path' """
@@ -154,12 +151,12 @@ class Connection(ConnectionBase):
         display.vvv("FETCH %s TO %s" % (in_path, out_path), host=self._remote_vmname)
 
         # We are running in dom0
-        cmd_args_list = ["qvm-run", "--pass-io", self._remote_vmname, "'cat {0}'".format(in_path)]
+        cmd_args_list = ["qvm-run", "--pass-io", self._remote_vmname, "cat {0}".format(in_path)]
         with open(out_path, "wb") as fobj:
             p = subprocess.Popen(cmd_args_list, shell=False, stdout=fobj)
             p.communicate()
             if p.returncode != 0:
-                raise RuntimeError('Failed to write target file {0}'.format(out_path))
+                raise RuntimeError('Failed to fetch file to {0}'.format(out_path))
 
     def close(self):
         """ Closing the connection """
