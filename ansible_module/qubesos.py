@@ -342,7 +342,11 @@ class QubesVirt(object):
             changed = True
             values_changed.append("provides_network")
         if "netvm" in prefs:
-            netvm = self.app.domains[prefs["netvm"]]
+            # To make sure that we allow VMs with netvm
+            if prefs["netvm"] == "":
+                netvm = ""
+            else:
+                netvm = self.app.domains[prefs["netvm"]]
             if vm.netvm != netvm:
                 vm.netvm = netvm
                 changed = True
