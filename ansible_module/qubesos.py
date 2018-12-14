@@ -151,6 +151,7 @@ PROPS = {'autostart': bool,
          'default_dispvm': str,
          'netvm': str,
          'features': dict,
+         'volume': dict,
         }
 
 
@@ -396,6 +397,17 @@ class QubesVirt(object):
                     did_feature_changed = True
             if did_feature_changed:
                 values_changed.append("features")
+        if "volume" in prefs:
+            val = prefs["volume"]
+            # Let us get the volume
+            try:
+                volume = vm.volumes[val["name"]]
+                volume.resize(val["size"])
+            except Exception:
+                return VIRT_FAILED, {"Failure in updating volume": val}
+            changed = True
+            values_changed.append("volume")
+
         return changed, values_changed
 
 
@@ -458,7 +470,22 @@ def core(module):
                 # Also the vm should provide network
                 if not vm.provides_network:
                     return VIRT_FAILED, {"Missing netvm capability": val}
-                    template_for_dispvms
+
+            # Make sure volume has both name and value
+            if key == "volume":
+                if "name" not in val:
+                    return VIRT_FAILED, {"Missing name for the volume": val}
+                elif "size" not in val:
+                    return VIRT_FAILED, {"Missing size for the volume": val}
+
+                allowed_name = []
+                if vmtype == 'AppVM':
+                    allowed_name.append("private")
+                elif vmtype in ["StandAloneVM", "TemplateVM"]:
+                    allowed_name.append("root")
+
+                if not val["name"] in allowed_name:
+                    return VIRT_FAILED, {"Wrong volume name": val}
 
             # Make sure that the default_dispvm exists
             if key == "default_dispvm":

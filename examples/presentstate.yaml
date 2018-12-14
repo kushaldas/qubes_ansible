@@ -12,6 +12,9 @@
           maxmem: 2400
           netvm: 'sys-whonix'
           label: "yellow"
+          volume:
+            name: "private"
+            size: "5368709120"
 
     - name: Run the VM
       qubesos:

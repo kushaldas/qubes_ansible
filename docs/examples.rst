@@ -89,6 +89,28 @@ Setting different property values to a given vm
 
 .. note:: Always remember to move the state to running to get the vm up and running.
 
+Resizing volume
+---------------
+
+This can be done using *volume* property. You can set the "private" volume size
+in AppVMs, and "root" volume size in StandAloneVM or TemplateVM. Right now it takes
+the size in bytes.
+
+::
+
+      tasks:
+    - name: Make sure the VM is present
+      qubesos:
+        guest: xchat2
+        state: present
+        properties:
+          memory: 1200
+          maxmem: 2400
+          netvm: 'sys-whonix'
+          label: "yellow"
+          volume:
+            name: "private"
+            size: "5368709120"
 
 Available properties
 ----------------------
@@ -110,6 +132,7 @@ The following are the different available properties and their data type.
 - 'default_dispvm': str
 - 'netvm': str
 - 'features': dict[str,str]
+- 'volume': dict[str,str]
 
 
 If you want to make changes to any existing vm, then first move it to *shutdown*
