@@ -10,8 +10,7 @@ Ansible module to create/destroy/maintain state of the VM(s).
 Put the ``ansible_module`` directory in a known place; in our example,
 we will put it in ``/usr/share/ansible_module``.
 
-Remember that this project will only from **dom0** or any VM with AdminAPI
-access.
+This project must be run from **dom0** or a VM with AdminAPI access.
 
 
 
