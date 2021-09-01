@@ -31,7 +31,7 @@ DOCUMENTATION = """
       remote_user:
         description:
             - The user to execute as inside the vm.
-        default: The *user* account as default in Qubes OS.
+        default: user
         vars:
             - name: ansible_user
 #        keyword:

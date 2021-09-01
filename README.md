@@ -4,6 +4,11 @@ This is a written from scratch project to have a default Ansible connection
 plugin to interact with [Qubes OS](https://qubes-os.org). There is also an
 Ansible module to create/destroy/maintain state of the VM(s). 
 
+## Documentation
+
+Read it [online](https://qubes-ansible.readthedocs.io/en/latest/), it has
+better commands and setup instructions than the README file.
+
 
 ## How to setup?
 
@@ -17,10 +22,10 @@ access.
 
 ## Installing Ansible and setup of the our module/connection
 
-Install Ansible whichever way you like. In **dom0** it would be,
+Install Ansible whichever way you like. In **Qubes 4.1 dom0** it would be,
 
 ```
-sudo qubes-dom0-update ansible-python3
+sudo qubes-dom0-update ansible
 ```
 
 
@@ -53,9 +58,5 @@ heavy development so the syntax/keywords may change in future.
 ### License GPLv3+
 
 Please see the [LICENSE](LICENSE) file for a complete copy of License.
-
-## Documentation
-
-Read it [online](https://qubes-ansible.readthedocs.io/en/latest/).
 
 

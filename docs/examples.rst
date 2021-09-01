@@ -19,14 +19,17 @@ it after creating new VMs, if you want ansible to be able to work with them.
 
 ::
 
-    ansible-3 localhost -m qubesos -a 'command=createinventory'
+    ansible localhost -m qubesos -a 'command=createinventory'
 
 Once you have an inventory file, you can run ansible playbooks like this:
 
 ::
 
-    ansible-playbook-3 -i inventory my_playbook.yaml
+    ansible-playbook -i inventory my_playbook.yaml
 
+
+If the **[standalone_vms]** section is empty in your `inventory` file, please delete that
+and also the corresponding connection details from the `inventory` file.
 
 Make sure a vm is present
 -------------------------
