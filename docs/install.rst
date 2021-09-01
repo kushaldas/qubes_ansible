@@ -26,10 +26,18 @@ In an AppVM, clone the git repo (we assume this vm's name is development).
 Install the Ansible project
 -----------------------------
 
+On Qubes 4.0.x
+
 ::
 
     sudo qubes-dom0-update ansible-python3
 
+
+On Qubes 4.1 please use the following command.
+
+::
+
+    sudo qubes-dom0-update ansible
 
 Copy over the ansible_module directory to the dom0
 ---------------------------------------------------
