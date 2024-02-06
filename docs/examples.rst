@@ -45,7 +45,7 @@ This is the preferred method to create a new vm if it is not there.
 
     tasks:
         - name: Create our test vm
-        qubesos:
+          qubesos:
             guest: supansible
             label: blue
             state: present
@@ -69,7 +69,7 @@ Setting different property values to a given vm
 
     tasks:
         - name: Make sure the VM is present
-        qubesos:
+          qubesos:
             guest: xchat2
             state: present
             properties:
@@ -80,12 +80,12 @@ Setting different property values to a given vm
               label: "yellow"
 
         - name: Make sure the xchat7 is present
-        qubesos:
+          qubesos:
             guest: xchat2
             state: present
 
         - name: Run the xchat2 VM
-        qubesos:
+          qubesos:
             guest: xchat2
             state: running
 
@@ -152,7 +152,7 @@ We can even add/update/remove ``features`` from a VM using properties.
 
     tasks:
         - name: Make sure the VM is present with right features
-        qubesos:
+          qubesos:
             guest: xchat2
             state: present
             properties:
@@ -191,7 +191,7 @@ We can also add tags to a VM using the tags values. It has to be a list of strin
 
     tasks:
         - name: Make sure right tags are assigned
-        qubesos:
+          qubesos:
             guest: xchat2
             state: present
             tags:
@@ -224,7 +224,7 @@ It will try to shutdown the vm normally.
 
 ::
 
-    ansible-3 localhost -i inventory -m qubesos -a 'guest=xhcat2 command=shutdown'
+    ansible localhost -i inventory -m qubesos -a 'guest=xhcat2 command=shutdown'
 
 destroy
 ++++++++
@@ -233,7 +233,7 @@ The *destroy* command will forcefully shutdown the guest now.
 
 ::
 
-    ansible-3 localhost -i inventory -m qubesos -a 'guest=xhcat2 command=destroy'
+    ansible localhost -i inventory -m qubesos -a 'guest=xhcat2 command=destroy'
 
 
 .. note:: Use the *destroyed* state to properly destroy a vm than this command.
@@ -251,7 +251,7 @@ Use this command with a list of tags to remove them from a given VM.
 
     tasks:
         - name: Make sure right tags are removed
-        qubesos:
+          qubesos:
             guest: xchat2
             command: removetags
             tags:
@@ -266,7 +266,7 @@ The following example will find all the vms with running state.
 
 ::
 
-    ansible-3 localhost -i inventory -m qubesos -a 'state=running command=list_vms'
+    ansible localhost -i inventory -m qubesos -a 'state=running command=list_vms'
 
 
 In the same way you can find vms with *shutdown* or *paused* state.
@@ -320,7 +320,7 @@ in every running vm.
     connection: local
     tasks:
         - name: Find running hosts
-        qubesos:
+          qubesos:
             command: list_vms
             state: running
         register: rhosts
@@ -342,7 +342,7 @@ Execute a command in every running vm except sys vms
     connection: local
     tasks:
         - name: Find running hosts
-        qubesos:
+          qubesos:
             command: list_vms
             state: running
         register: rhosts
@@ -370,7 +370,7 @@ We are not shutting down any VM which starts with **sys-** in this example.
     connection: local
     tasks:
         - name: Find running hosts
-        qubesos:
+          qubesos:
             command: list_vms
             state: running
         register: rhosts

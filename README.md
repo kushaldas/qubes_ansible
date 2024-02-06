@@ -22,7 +22,7 @@ access.
 
 ## Installing Ansible and setup of the our module/connection
 
-Install Ansible whichever way you like. In **Qubes 4.1 dom0** it would be,
+Install Ansible whichever way you like. In **Qubes 4.2 dom0** it would be,
 
 ```
 sudo qubes-dom0-update ansible
@@ -33,6 +33,7 @@ sudo qubes-dom0-update ansible
 Update your ``/etc/ansible/ansible.cfg`` to have the following two lines.
 
 ```
+[defaults]
 library = /usr/share/ansible_module/
 connection_plugins = /usr/share/ansible_module/conns/ 
 ```

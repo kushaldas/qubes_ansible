@@ -26,14 +26,8 @@ In an AppVM, clone the git repo (we assume this vm's name is development).
 Install the Ansible project
 -----------------------------
 
-On Qubes 4.0.x
 
-::
-
-    sudo qubes-dom0-update ansible-python3
-
-
-On Qubes 4.1 please use the following command.
+On Qubes 4.2 please use the following command.
 
 ::
 
@@ -63,6 +57,7 @@ We will add the following two lines to ``/etc/ansible/ansible.cfg`` file.
 
 ::
 
+    [defaults]
     library = /usr/share/ansible_module/
     connection_plugins = /usr/share/ansible_module/conns/
 
