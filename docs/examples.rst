@@ -284,7 +284,10 @@ Here is an example playbook (install_packages.yaml) for the same.
     - hosts: xchat7
     tasks:
     - name: Ensure sl is at the latest version
-        package: name=sl state=latest
+      ansible.builtin.package:
+        name: sl
+        state: latest
+      become: true
     - name: example copying file with owner and permissions
         copy:
         src: foo.conf
